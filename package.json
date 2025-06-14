@@ -1,0 +1,40 @@
+{
+  "name": "qrcode-reader",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./dist/index.js",
+    "postinstall": "tsc && tsc-esm-fix dist",
+    "build": "tsc && tsc-esm-fix dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "app-root-path": "^3.1.0",
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "figlet": "^1.8.1",
+    "getpid": "^1.0.0",
+    "inquirer": "^12.6.3",
+    "jimp": "^1.6.0",
+    "jsqr": "^1.4.0",
+    "keytar": "^7.9.0",
+    "ora": "^8.2.0",
+    "otpauth": "^9.4.0",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "bin": {
+    "qrcode": "./dist/index.js"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^24.0.1",
+    "@types/qrcode-terminal": "^0.12.2",
+    "tsc-esm-fix": "^3.1.2",
+    "tsx": "^4.19.4"
+  },
+  "type": "module"
+}
