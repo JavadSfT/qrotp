@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#! /usr/bin/env node
 import keytar from "keytar";
 import fs from "fs";
 import { askHiddenInput, askUserInput } from "./utils/prompt";
@@ -21,7 +21,6 @@ import {
   watchToken,
 } from "./core/otp";
 import { SERVICE_ACCOUNT, SERVICE_NAME } from "./utils/constant";
-import { runInteractiveMenu } from "./cli/menu";
 import ora from "ora";
 
 function showHelp() {
@@ -40,12 +39,27 @@ Examples:
   node otp-cli.js --save-base64 --name Gmail --value ABCDEF==
   node otp-cli.js --read 2
 `);
+  process.exit(0);
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const options = parseArgs(args);
+
+  const get = (k: string): string | undefined => {
+    const val = options[k];
+    return typeof val === "string" ? val : undefined;
+  };
+
+  const has = (...keys: string[]) => keys.some((k) => k in options);
+
   // await keytar.deletePassword(SERVICE_NAME, SERVICE_ACCOUNT)
 
   const getMasterPassword = await getPassword();
+
+  if (has("-h", "--help")) {
+    showHelp();
+  }
 
   if (!getMasterPassword) {
     const mp = await askHiddenInput("Write master password: ");
@@ -69,15 +83,6 @@ async function main() {
   }
 
   ensureJsonListExists();
-  const args = process.argv.slice(2);
-  const options = parseArgs(args);
-
-  const get = (k: string): string | undefined => {
-    const val = options[k];
-    return typeof val === "string" ? val : undefined;
-  };
-
-  const has = (...keys: string[]) => keys.some((k) => k in options);
 
   if (has("-sb", "--save-base64")) {
     const name = get("-n") ?? (await askUserInput("Enter name: "));
@@ -145,14 +150,6 @@ async function main() {
     return;
   }
 
-  if (has("-h", "--help")) {
-    showHelp();
-  }
-
-  if (has("-m", "--menu")) {
-    runInteractiveMenu();
-  }
-
   if (Object.keys(options).length === 0) {
     ora("No valid option provided.").fail();
     showHelp();
@@ -161,12 +158,10 @@ async function main() {
 
   if (args.length === 1 && typeof args[0] === "string") {
     const token = await getOtpFromBase64Qr(args[0]);
-    if (token) console.log("Generated OTP:", token);
+    if (token) ora(`Generated OTP: ${token}`).succeed();
     else ora("Failed to generate OTP.").fail();
     return;
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+main();

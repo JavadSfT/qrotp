@@ -2,10 +2,11 @@ import keytar from 'keytar';
 import fs from 'fs';
 import { Sha256 } from './crypto';
 import { askHiddenInput } from './prompt';
+import ora from 'ora';
+import { SESSION_FILE_NAME } from './constant';
 
 const SERVICE_NAME = "qrotp-service";
 const SERVICE_ACCOUNT = "master_account";
-const SESSION_FILE_NAME = "./session.lock";
 const SESSION_DURATION_MS = 10 * 60 * 1000;
 
 export const getPassword = async () => {
@@ -23,7 +24,6 @@ export const setSession = async (secret: string) => {
 export const initialSession = async () => {
   const sessionExist = fs.existsSync(SESSION_FILE_NAME);
   const sha256 = new Sha256((await getPassword())!);
-  console.log("init session : ", Date.now());
   const newSession = {
     expireTime: Date.now(),
   };
@@ -45,7 +45,7 @@ export const getSession = async (secret: string) => {
 export const validateUser = async (masterPassword: string) => {
   const password = (await askHiddenInput("enter password: ")).trim();
   if (password !== masterPassword) {
-    console.error("password is invalid");
+    ora("password is invalid").fail();
     process.exit(0);
   }
   await setSession(masterPassword);
