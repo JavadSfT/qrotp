@@ -1,11 +1,10 @@
 import { Jimp } from "jimp";
 import jsQR from "jsqr";
 import * as OTPAuth from "otpauth";
-import * as path from "path";
 import fs from "fs";
 import { Sha256 } from "../utils/crypto";
 import { getPassword } from "../utils/session";
-import { OTP_FILE_PATH } from "src/utils/constant";
+import { OTP_FILE_PATH } from "../utils/constant";
 import ora from "ora";
 
 interface QrScanResult {

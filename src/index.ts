@@ -25,19 +25,48 @@ import ora from "ora";
 
 function showHelp() {
   console.log(`
+qrotp - Manage and generate OTP tokens from QR codes securely
+
 Usage:
-  -sb, --save-base64      Save a base64 QR string
-  -sp, --save-pic         (Soon) Save from image file
-  -r,  --read <index>     Read OTP from saved list
-  -w,  --watch            Watch OTP from a given index
-  -d,  --delete <index>   Delete entry from saved list
-  -n,  --name <string>    Name for saved token
-  -v,  --value <string>   Base64 value for saving
-  -l,  --list             List all saved tokens
+  qrotp [options]
+
+Options:
+  -sb, --save-base64          Save a base64 QR string to saved list
+      --name, -n <string>     Name/label for the saved token
+      --value, -v <string>    Base64 value for saving
+
+  -sp, --save-pic             Save QR from an image file (PNG/JPG)
+      --name, -n <string>     Name/label for the saved token
+      --value, -v <string>    Path to image file (e.g. ./qr.png)
+
+  -r, --read <index>          Read and generate OTP from saved token
+  -w, --watch                 Continuously watch OTP every 30s
+      (must be used with --read)
+
+  -d, --delete <index>        Delete entry by its index from saved list
+
+  -l, --list                  List all saved tokens with index and name
+
+  -h, --help                  Show this help message
+
+Positional:
+  <base64>                    (optional) Direct base64 QR input for quick OTP generation
+                              Example: qrotp "ABCDEF=="
 
 Examples:
-  node otp-cli.js --save-base64 --name Gmail --value ABCDEF==
-  node otp-cli.js --read 2
+  qrotp --save-base64 --name Gmail --value "ABCDEF=="
+  qrotp --save-pic --name WorkEmail --value ./qr.png
+  qrotp --list
+  qrotp --read 2
+  qrotp --read 2 --watch
+  qrotp --delete 3
+  qrotp "ABCDEF=="
+
+Note:
+  - You must set a master password on first run
+  - Data is securely encrypted and stored locally
+  - All indexes start from 1
+
 `);
   process.exit(0);
 }
