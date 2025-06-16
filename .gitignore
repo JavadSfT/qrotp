@@ -3,5 +3,5 @@ node_modules/
 backup/
 sessions/
 otp/
-**/qr_base64.json
+**/otp.sec
 **/session.lock

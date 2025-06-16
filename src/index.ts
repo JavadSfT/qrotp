@@ -1,12 +1,12 @@
 #! /usr/bin/env node
 import keytar from "keytar";
-import fs from "fs";
+import { existsSync } from "fs";
 import { askHiddenInput, askUserInput } from "./utils/prompt";
 import { parseArgs } from "./core/arg";
 import {
   getPassword,
   getSession,
-  initialSession,
+  setSession,
   validateUser,
 } from "./utils/session";
 import {
@@ -95,7 +95,7 @@ async function main() {
     const cmp = await askHiddenInput("Write Confirm Password: ");
     if (mp === cmp) {
       await keytar.setPassword(SERVICE_NAME, SERVICE_ACCOUNT, mp);
-      await initialSession();
+      await setSession(mp);
     }
   }
 
@@ -125,7 +125,7 @@ async function main() {
     const filePath =
       get("-v") ?? (await askUserInput("Enter image file path: "));
 
-    if (!fs.existsSync(filePath)) {
+    if (!existsSync(filePath)) {
       ora(` File does not exist: ${filePath}`).fail();
       process.exit(1);
     }

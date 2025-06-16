@@ -1,11 +1,11 @@
 import { Jimp } from "jimp";
 import jsQR from "jsqr";
 import * as OTPAuth from "otpauth";
-import fs from "fs";
+import { readFileSync, existsSync, writeFileSync } from "fs";
+import ora from "ora";
 import { Sha256 } from "../utils/crypto";
 import { getPassword } from "../utils/session";
 import { OTP_FILE_PATH } from "../utils/constant";
-import ora from "ora";
 
 interface QrScanResult {
   data: string;
@@ -14,14 +14,14 @@ interface QrScanResult {
 const sha256 = new Sha256((await getPassword())!);
 
 export function ensureJsonListExists() {
-  if (!fs.existsSync(OTP_FILE_PATH)) {
-    fs.writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
+  if (!existsSync(OTP_FILE_PATH)) {
+    writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
   } else {
     try {
-      JSON.parse(sha256.decrypt(fs.readFileSync(OTP_FILE_PATH, "utf-8")));
+      JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf-8")));
     } catch (err) {
       ora("JSON file was corrupted, resetting...").warn();
-      fs.writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
+      writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
     }
   }
 }
@@ -33,8 +33,8 @@ export async function convertImageToBase64(filePath: string) {
 
 export function readJsonList(): { name: string; value: string }[] {
   try {
-    if (!fs.existsSync(OTP_FILE_PATH)) return [];
-    return JSON.parse(sha256.decrypt(fs.readFileSync(OTP_FILE_PATH, "utf8")));
+    if (!existsSync(OTP_FILE_PATH)) return [];
+    return JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf8")));
   } catch (error) {
     ora(`Error reading JSON list: ${error}`).fail();
     process.exit(1);
@@ -61,6 +61,7 @@ export async function readFromIndex(index: number): Promise<void> {
 
 export function showSavedList(): void {
   const list = readJsonList();
+  console.log(list);
   if (list.length === 0) {
     ora("No saved entries.").fail();
     return;
@@ -78,7 +79,7 @@ export function deleteFromList(index: number): void {
   }
 
   const removed = list.splice(index, 1)[0];
-  fs.writeFileSync(
+  writeFileSync(
     OTP_FILE_PATH,
     sha256.encrypt(JSON.stringify(list, null, 2))
   );
@@ -88,11 +89,11 @@ export function deleteFromList(index: number): void {
 export function saveToJsonList(name: string, base64String: string): void {
   try {
     let list: { name: string; value: string }[] = [];
-    if (fs.existsSync(OTP_FILE_PATH)) {
-      list = JSON.parse(sha256.decrypt(fs.readFileSync(OTP_FILE_PATH, "utf8")));
+    if (existsSync(OTP_FILE_PATH)) {
+      list = JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf8")));
     }
     list.push({ name, value: base64String });
-    fs.writeFileSync(
+    writeFileSync(
       OTP_FILE_PATH,
       sha256.encrypt(JSON.stringify(list, null, 2))
     );

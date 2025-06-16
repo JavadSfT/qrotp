@@ -4,7 +4,13 @@
 
 A secure command-line tool for managing, encrypting, extracting, and generating 2FA tokens with simplicity and full control.
 
-<img src="https://img.shields.io/badge/TypeScript-Enabled-blue?style=flat" /> <img src="https://img.shields.io/badge/Secure-AES--256--GCM-green" /> <img src="https://img.shields.io/badge/CLI-Focused-informational" />
+![Node.js >= 18](https://img.shields.io/badge/Node.js-%3E=18-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue) ![CLI Tool](https://img.shields.io/badge/CLI-Focused-informational) ![OTP Generator](https://img.shields.io/badge/2FA--TOTP-Generator-orange)
+![Image Support](https://img.shields.io/badge/QR--Image-Enabled-lightgrey) ![AES-256-GCM](https://img.shields.io/badge/Secure-AES--256--GCM-green)
+![Local Encryption](https://img.shields.io/badge/Local%20Storage-Encrypted-green)
+![Session Lock](https://img.shields.io/badge/Session-Locked-critical) ![Cross-platform](https://img.shields.io/badge/Platform-Mac%7CLinux%7CWin-lightblue)
+![License: MIT](https://img.shields.io/badge/License-ISC-yellow)
+
 
 ---
 
@@ -51,7 +57,7 @@ npm run build
 For global CLI access:
 
 ```bash
-npm install -g qrotp
+npm install -g qrotp@beta
 ```
 
 ---
