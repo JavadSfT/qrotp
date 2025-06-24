@@ -1,7 +1,7 @@
-import { stdin , stdout } from "process";
+import { stdin, stdout } from "process";
 import Readline from "readline";
 
-export function askUserInput(question: string): Promise<string> {
+export const askUserInput = async (question: string): Promise<string> => {
   const rl = Readline.createInterface({
     input: stdin,
     output: stdout,
@@ -12,9 +12,9 @@ export function askUserInput(question: string): Promise<string> {
       resolve(answer.trim());
     });
   });
-}
+};
 
-export function askHiddenInput(question: string): Promise<string> {
+export const askHiddenInput = async (question: string): Promise<string> => {
   return new Promise((resolve) => {
     stdout.write(question);
 
@@ -46,4 +46,4 @@ export function askHiddenInput(question: string): Promise<string> {
 
     stdin.on("data", onData);
   });
-}
+};

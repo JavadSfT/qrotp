@@ -4,8 +4,9 @@ import { existsSync } from "fs";
 import { askHiddenInput, askUserInput } from "./utils/prompt";
 import { parseArgs } from "./core/arg";
 import {
-  getPassword,
+  getMasterPassword,
   getSession,
+  removeExpiredSession,
   setSession,
   validateUser,
 } from "./utils/session";
@@ -23,7 +24,7 @@ import {
 import { SERVICE_ACCOUNT, SERVICE_NAME } from "./utils/constant";
 import ora from "ora";
 
-function showHelp() {
+const showHelp = () => {
   console.log(`
 qrotp - Manage and generate OTP tokens from QR codes securely
 
@@ -69,9 +70,10 @@ Note:
 
 `);
   process.exit(0);
-}
+};
 
-async function main() {
+const main = async () => {
+  await removeExpiredSession();
   const args = process.argv.slice(2);
   const options = parseArgs(args);
 
@@ -84,13 +86,11 @@ async function main() {
 
   // await keytar.deletePassword(SERVICE_NAME, SERVICE_ACCOUNT)
 
-  const getMasterPassword = await getPassword();
-
   if (has("-h", "--help")) {
     showHelp();
   }
 
-  if (!getMasterPassword) {
+  if (!(await getMasterPassword())) {
     const mp = await askHiddenInput("Write master password: ");
     const cmp = await askHiddenInput("Write Confirm Password: ");
     if (mp === cmp) {
@@ -99,7 +99,7 @@ async function main() {
     }
   }
 
-  const gmp = (await getPassword())!;
+  const gmp = (await getMasterPassword())!;
   let session;
   try {
     session = await getSession(gmp);
@@ -191,6 +191,6 @@ async function main() {
     else ora("Failed to generate OTP.").fail();
     return;
   }
-}
+};
 
 main();

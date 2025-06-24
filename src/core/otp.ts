@@ -1,48 +1,47 @@
 import { Jimp } from "jimp";
 import jsQR from "jsqr";
 import * as OTPAuth from "otpauth";
-import { readFileSync, existsSync, writeFileSync } from "fs";
+import { existsSync } from "fs";
 import ora from "ora";
-import { Sha256 } from "../utils/crypto";
-import { getPassword } from "../utils/session";
 import { OTP_FILE_PATH } from "../utils/constant";
+import { readEncryptedFile, writeEncryptedFile } from "../utils/file";
 
 interface QrScanResult {
   data: string;
 }
 
-const sha256 = new Sha256((await getPassword())!);
-
-export function ensureJsonListExists() {
+export const ensureJsonListExists = async () => {
   if (!existsSync(OTP_FILE_PATH)) {
-    writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
+    await writeEncryptedFile(OTP_FILE_PATH, "[]");
   } else {
     try {
-      JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf-8")));
+      JSON.parse(await readEncryptedFile(OTP_FILE_PATH));
     } catch (err) {
       ora("JSON file was corrupted, resetting...").warn();
-      writeFileSync(OTP_FILE_PATH, sha256.encrypt("[]"), "utf-8");
+      await writeEncryptedFile(OTP_FILE_PATH, "[]");
     }
   }
-}
+};
 
-export async function convertImageToBase64(filePath: string) {
+export const convertImageToBase64 = async (filePath: string) => {
   const image = await Jimp.read(filePath);
   return image.getBase64("image/png");
-}
+};
 
-export function readJsonList(): { name: string; value: string }[] {
+export const readJsonList = async (): Promise<
+  { name: string; value: string }[]
+> => {
   try {
     if (!existsSync(OTP_FILE_PATH)) return [];
-    return JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf8")));
+    return JSON.parse(await readEncryptedFile(OTP_FILE_PATH));
   } catch (error) {
     ora(`Error reading JSON list: ${error}`).fail();
     process.exit(1);
   }
-}
+};
 
-export async function readFromIndex(index: number): Promise<void> {
-  const list = readJsonList();
+export const readFromIndex = async (index: number): Promise<void> => {
+  const list = await readJsonList();
   if (index < 0 || index >= list.length) {
     ora("Invalid index.").fail();
     process.exit(1);
@@ -57,10 +56,10 @@ export async function readFromIndex(index: number): Promise<void> {
     ora("Failed to generate OTP.").fail();
     process.exit(1);
   }
-}
+};
 
-export function showSavedList(): void {
-  const list = readJsonList();
+export const showSavedList = async () => {
+  const list = await readJsonList();
   console.log(list);
   if (list.length === 0) {
     ora("No saved entries.").fail();
@@ -69,45 +68,39 @@ export function showSavedList(): void {
   list.forEach((item, index) => {
     console.log(`[${index + 1}] ${item.name}`);
   });
-}
+};
 
-export function deleteFromList(index: number): void {
-  const list = readJsonList();
+export const deleteFromList = async (index: number) => {
+  const list = await readJsonList();
   if (index < 0 || index >= list.length) {
     ora("Invalid index.").fail();
     process.exit(1);
   }
 
   const removed = list.splice(index, 1)[0];
-  writeFileSync(
-    OTP_FILE_PATH,
-    sha256.encrypt(JSON.stringify(list, null, 2))
-  );
+  await writeEncryptedFile(OTP_FILE_PATH, JSON.stringify(list, null, 2));
   ora(`Deleted entry: "${removed.name}"`).succeed();
-}
+};
 
-export function saveToJsonList(name: string, base64String: string): void {
+export const saveToJsonList = async (name: string, base64String: string) => {
   try {
     let list: { name: string; value: string }[] = [];
     if (existsSync(OTP_FILE_PATH)) {
-      list = JSON.parse(sha256.decrypt(readFileSync(OTP_FILE_PATH, "utf8")));
+      list = JSON.parse(await readEncryptedFile(OTP_FILE_PATH));
     }
     list.push({ name, value: base64String });
-    writeFileSync(
-      OTP_FILE_PATH,
-      sha256.encrypt(JSON.stringify(list, null, 2))
-    );
+    await writeEncryptedFile(OTP_FILE_PATH, JSON.stringify(list, null, 2));
     ora(`Saved "${name}" to list.`).succeed();
   } catch (error) {
     ora(`Error saving to JSON list: ${error}`).fail();
     process.exit(1);
   }
-}
+};
 
-export async function getOtpFromBase64Qr(
+export const getOtpFromBase64Qr = async (
   base64ImageString: string,
   returnRaw: boolean = false
-): Promise<string | null> {
+): Promise<string | null> => {
   try {
     if (!base64ImageString) process.exit(1);
     const base64Data = base64ImageString.replace(
@@ -135,12 +128,12 @@ export async function getOtpFromBase64Qr(
     ora(`Error processing QR Code: ${error}`);
     return null;
   }
-}
+};
 
-export async function getOtpFromImageFile(
+export const getOtpFromImageFile = async (
   filePath: string,
   returnRaw = false
-): Promise<string | null> {
+): Promise<string | null> => {
   try {
     const image = await Jimp.read(filePath);
     const imageData = new Uint8ClampedArray(image.bitmap.data.buffer);
@@ -159,10 +152,10 @@ export async function getOtpFromImageFile(
     ora(`Failed to read QR from image: ${err}`).fail();
     return null;
   }
-}
+};
 
-export async function watchToken(index: number): Promise<void> {
-  const list = readJsonList();
+export const watchToken = async (index: number): Promise<void> => {
+  const list = await readJsonList();
   if (index < 0 || index >= list.length) {
     ora("Invalid index.").fail();
     process.exit(1);
@@ -203,4 +196,4 @@ export async function watchToken(index: number): Promise<void> {
     console.log(`⏳ Expires in: ${remaining}s`);
     console.log("---------------------");
   }, 1000);
-}
+};

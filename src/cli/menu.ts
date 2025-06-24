@@ -1,27 +1,25 @@
-import inquirer from 'inquirer';
+import inquirer from "inquirer";
 
-export async function runInteractiveMenu() {
+export const runInteractiveMenu = async () => {
   const answer = await inquirer.prompt([
     {
-      type: 'list',
-      name: 'mainAction',
-      message: 'what do you want',
+      type: "list",
+      name: "mainAction",
+      message: "what do you want",
       choices: [
-        { name: 'creae new oto', value: 'new' },
-        { name: 'list of otp', value: 'history' },
-        { name: 'exit', value: 'exit' }
-      ]
-    }
+        { name: "creae new oto", value: "new" },
+        { name: "list of otp", value: "history" },
+        { name: "exit", value: "exit" },
+      ],
+    },
   ]);
 
   switch (answer.mainAction) {
-    case 'new':
-
-    break;
-    case 'history':
-      
+    case "new":
       break;
-    case 'exit':
+    case "history":
+      break;
+    case "exit":
       process.exit();
   }
-}
+};

@@ -1,29 +1,29 @@
 import keytar from "keytar";
-import { readFileSync, writeFileSync } from "fs";
 import ora from "ora";
-import { Sha256 } from "./crypto";
 import { askHiddenInput } from "./prompt";
-import { SESSION_FILE_NAME } from "./constant";
+import {
+  SERVICE_ACCOUNT,
+  SERVICE_NAME,
+  SESSION_DURATION_MS,
+  SESSION_FILE_NAME,
+} from "./constant";
+import { readEncryptedFile, writeEncryptedFile } from "./file";
+import fs , { readdirSync } from "fs";
+import os from 'os';
 
-const SERVICE_NAME = "qrotp-service";
-const SERVICE_ACCOUNT = "master_account";
-const SESSION_DURATION_MS = 10 * 60 * 1000;
-
-export const getPassword = async () => {
+export const getMasterPassword = async () => {
   return await keytar.getPassword(SERVICE_NAME, SERVICE_ACCOUNT);
 };
 
 export const setSession = async (secret: string) => {
-  const sha256 = new Sha256(secret);
   const session = {
     expireTime: Date.now() + SESSION_DURATION_MS,
   };
-  writeFileSync(SESSION_FILE_NAME, sha256.encrypt(JSON.stringify(session)));
+  await writeEncryptedFile(SESSION_FILE_NAME, JSON.stringify(session), secret);
 };
 
 export const getSession = async (secret: string) => {
-  const sha256 = new Sha256(secret);
-  return JSON.parse(sha256.decrypt(readFileSync(SESSION_FILE_NAME, "utf-8")));
+  return JSON.parse(await readEncryptedFile(SESSION_FILE_NAME, secret));
 };
 
 export const validateUser = async (masterPassword: string) => {
@@ -33,4 +33,17 @@ export const validateUser = async (masterPassword: string) => {
     process.exit(0);
   }
   await setSession(masterPassword);
+};
+
+export const removeExpiredSession = async () => {
+  const sessionPath = os.homedir() +  "/.config/qrotp/sessions/"
+  const data = readdirSync(sessionPath);
+  for (const p of data) {
+    const file = JSON.parse(await readEncryptedFile(sessionPath + `/${p}`))
+    console.log(file.expireTime , Date.now());
+    if(file.expireTime < Date.now()){
+      fs.rmSync(sessionPath + `/${p}`)
+    }
+  }
+  console.log(data);
 };
