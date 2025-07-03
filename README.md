@@ -1,51 +1,44 @@
-# 🚧 BETA VERSION — Still under development
+# 🚧 **BETA WARNING: This project is under active development. Use at your own risk. Data loss or breaking changes may occur.**
 
 # 🔐 qrotp
 
-A secure command-line tool for managing, encrypting, extracting, and generating 2FA tokens with simplicity and full control.
+> **A blazing-fast, secure CLI for managing, encrypting, and generating TOTP/HOTP 2FA tokens from QR codes.**  
+> _No GUI. No cloud. 100% local, encrypted, and cross-platform._
 
-![Node.js >= 18](https://img.shields.io/badge/Node.js-%3E=18-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue) ![CLI Tool](https://img.shields.io/badge/CLI-Focused-informational) ![OTP Generator](https://img.shields.io/badge/2FA--TOTP-Generator-orange)
-![Image Support](https://img.shields.io/badge/QR--Image-Enabled-lightgrey) ![AES-256-GCM](https://img.shields.io/badge/Secure-AES--256--GCM-green)
-![Local Encryption](https://img.shields.io/badge/Local%20Storage-Encrypted-green)
-![Session Lock](https://img.shields.io/badge/Session-Locked-critical) ![Cross-platform](https://img.shields.io/badge/Platform-Mac%7CLinux%7CWin-lightblue)
-![License: MIT](https://img.shields.io/badge/License-ISC-yellow)
-
-
----
-
-## ✨ Introduction
-
-`qrotp` is a fast and secure CLI utility for managing two-factor authentication (2FA) tokens. It allows you to read QR codes, store them securely with strong encryption, and generate time-based OTPs easily — all via the terminal.
-
-> No GUI. Full terminal control. One master password to unlock everything.
+[![Node.js >= 18](https://img.shields.io/badge/Node.js-%3E=18-blue)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue)](https://www.typescriptlang.org/)
+[![CLI Tool](https://img.shields.io/badge/CLI-Focused-informational)](https://github.com/javadsft/qrotp)
+[![OTP Generator](https://img.shields.io/badge/2FA--TOTP%2FHOTP-Generator-orange)](https://github.com/javadsft/qrotp)
+[![Image Support](https://img.shields.io/badge/QR--Image-Enabled-lightgrey)](https://github.com/javadsft/qrotp)
+[![AES-256-GCM](https://img.shields.io/badge/Secure-AES--256--GCM-green)](https://github.com/javadsft/qrotp)
+[![Local Encryption](https://img.shields.io/badge/Local%20Storage-Encrypted-green)](https://github.com/javadsft/qrotp)
+[![Session Lock](https://img.shields.io/badge/Session-Locked-critical)](https://github.com/javadsft/qrotp)
+[![Cross-platform](https://img.shields.io/badge/Platform-Mac%7CLinux%7CWin-lightblue)](https://github.com/javadsft/qrotp)
+[![License: ISC](https://img.shields.io/badge/License-ISC-yellow)](LICENSE)
 
 ---
 
-## ⚙️ Features
+## ✨ Why qrotp?
 
-* 📷 Read QR codes from image or Base64  
-* 🔐 Secure AES-256-GCM encryption with a master password  
-* 🧾 Encrypted storage and management of OTP entries  
-* 🔁 Live OTP generation with auto-refresh every second  
-* 🧠 Extract raw `otpauth://` data from QR  
-* 💀 Remove stored entries by index  
-* 🖼 Convert images to Base64 for easy input  
-
----
-
-## 🧱 Security Architecture
-
-All data — including the list of OTPs — is encrypted using AES-256-GCM. The key is derived from a user-provided master password. Without the password, the data is useless.
-
-* Random IV + Auth Tag  
-* Final result stored as Base64  
-* Decryption only possible via original password  
-* Master password kept in memory (RAM) during session only  
+- **No cloud, no leaks:** All secrets are encrypted and stored locally.
+- **TOTP & HOTP:** Supports both time-based and counter-based OTPs.
+- **Image & Base64:** Add tokens from QR images or base64 strings.
+- **Master password:** One password to unlock all your tokens.
+- **Session lock:** Auto-locks after inactivity for extra safety.
+- **Blazing fast:** Instant CLI access, no bloat, no waiting.
+- **Cross-platform:** Works on Linux, macOS, and Windows.
 
 ---
 
-## 📦 Installation
+## 🕒 Visual: TOTP vs HOTP
+
+| TOTP (Time-based) | HOTP (Counter-based) |
+|:-----------------:|:-------------------:|
+| ![TOTP](images/totp.png) | ![HOTP](images/hotp.png) |
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/your-username/qrotp.git
@@ -57,120 +50,138 @@ npm run build
 For global CLI access:
 
 ```bash
-npm install -g qrotp@beta
+npm install -g qrotp
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🖥️ CLI Usage
 
-```bash
-qrotp -sp ./qrcode.png -n "GitHub"
-qrotp -l
-qrotp -r 0
+```shell
+qrotp [options]
+qrotp <base64> [--counter N]
 ```
 
----
+<details>
+<summary><strong>Click to expand full command reference</strong></summary>
 
-## 🔤 Commands
+| Short | Long         | Description                                      |
+|-------|--------------|--------------------------------------------------|
+| -sb   | --save-base64| Save a base64 QR string to saved list            |
+| -sp   | --save-pic   | Save QR from an image file (PNG/JPG)             |
+| -n    | --name       | Name/label for the saved token                   |
+| -v    | --value      | Base64 value or image path for saving            |
+| -r    | --read       | Read and generate OTP from saved token           |
+| -c    | --counter    | (HOTP only) Specify counter value for HOTP       |
+| -w    | --watch      | Continuously watch OTP every 30s (TOTP only)     |
+| -d    | --delete     | Delete entry by its index from saved list        |
+| -l    | --list       | List all saved tokens with index, name, and type |
+| -h    | --help       | Show this help message                           |
+|       | --version, -v| Show version                                     |
 
-| Flag | Long Name     | Description                          |
-| ---- | ------------- | ---------------------------------- |
-| -sp  | --save-pic    | Save QR from image file             |
-| -sb  | --save-base64 | Save QR from base64 string          |
-| -n   | --name        | Custom label for stored entry       |
-| -l   | --list        | Display all stored OTP entries      |
-| -r   | --read        | Generate OTP for an entry by index  |
-| -w   | --watch       | Live-refresh OTP every second       |
-| -d   | --delete      | Delete entry by index               |
-| -v   | --value       | Raw value for otpauth/base64 parsing|
-| -h   | --help        | Show help menu                     |
+</details>
+
+### Positional
+
+- `<base64>`: Direct base64 QR input for quick OTP generation  
+  Example: `qrotp "ABCDEF=="`
 
 ---
 
 ## 📸 Examples
 
-**Save from image:**
-
-```bash
-qrotp --save-pic ./qrs/github.png --name "GitHub"
+**Add a TOTP token from image:**
+```sh
+qrotp -sp images/totp.png -n sample-totp
 ```
 
-**Save from base64:**
-
-```bash
-qrotp --save-base64 "data:image/png;base64,iVBOR..." --name "Google"
+**Add a HOTP token from image:**
+```sh
+qrotp -sp images/hotp.png -n sample-hotp
 ```
 
-**List entries:**
-
-```bash
+**List all entries:**
+```sh
 qrotp --list
 ```
 
-**Generate OTP:**
-
-```bash
-qrotp --read 0
+**Generate TOTP (index 1):**
+```sh
+qrotp --read 1
 ```
 
-**Watch live OTP:**
-
-```bash
-qrotp --watch 0
+**Generate HOTP (index 2, counter 7):**
+```sh
+qrotp --read 2 --counter 7
 ```
 
-**Delete an entry:**
-
-```bash
-qrotp --delete 0
+**Watch TOTP token (index 1):**
+```sh
+qrotp --read 1 --watch
 ```
 
----
-
-## 📁 File Storage
-
-All encrypted data is saved in a single persistent file:
-
-```ts
-src/utils/constant.ts → OTP_FILE_PATH
+**Delete an entry (index 2):**
+```sh
+qrotp --delete 2
 ```
 
----
-
-## 📦 Dependencies
-
-* `jimp` - Image processing  
-* `jsQR` - QR code reader  
-* `otpauth` - OTP management  
-* `ora` - Terminal loading spinner  
-* `crypto` (native) - Node.js encryption  
-
----
-
-## 👨‍💻 For Development
-
-Run in development mode:
-
-```bash
-npm run dev
+**Generate OTP directly from a base64 QR:**
+```sh
+qrotp "ABCDEF=="
+qrotp "ABCDEF==" --counter 7
 ```
 
 ---
 
-## 🛡 Security Notes
+## 🔒 Security Model
 
-* Master password is never saved to disk  
-* Password stored only in memory (RAM) per session  
-* Each launch requires password input again  
-* Encrypted file is useless without correct password  
+- **AES-256-GCM** encryption for all data.
+- **Master password** is never saved to disk, only in RAM during session.
+- **Session lock**: auto-locks after inactivity.
+- **No cloud, no telemetry, no tracking.**
+- **One file**: All secrets stored in a single encrypted file.
 
 ---
 
-## 🧠 Roadmap Ideas
+## 🧩 Dependencies
 
-* 🔒 Support multiple encrypted profiles  
-* 📦 Bundle standalone binary via `pkg` or `nexe`  
+- [`jimp`](https://www.npmjs.com/package/jimp) - Image processing
+- [`jsQR`](https://www.npmjs.com/package/jsqr) - QR code reader
+- [`otpauth`](https://www.npmjs.com/package/otpauth) - OTP management
+- [`ora`](https://www.npmjs.com/package/ora) - Terminal loading spinner
+- [`keytar`](https://www.npmjs.com/package/keytar) - Secure credential storage
+
+---
+
+## 🛡️ FAQ
+
+**Q: Is my master password ever saved?**  
+A: Never. It is only kept in memory for the session.
+
+**Q: Can I use this for both TOTP and HOTP?**  
+A: Yes! It auto-detects the type from the QR.
+
+**Q: Can I export or backup my tokens?**  
+A: Not yet, but this is on the roadmap.
+
+**Q: What if I forget my master password?**  
+A: There is no recovery. Your data is cryptographically locked.
+
+---
+
+## 🧠 Roadmap
+
+- 🔒 Multiple encrypted profiles
+- 🌐 Import/export for backup/restore
+- 📦 Bundle as a standalone binary (`pkg`, `nexe`)
+- 🖥️ GUI companion (maybe!)
+
+---
+
+## 👨‍💻 Contributing
+
+PRs, issues, and feature requests are welcome!  
+Please open an issue or pull request on [GitHub](https://github.com/your-username/qrotp).
 
 ---
 
@@ -180,4 +191,4 @@ ISC © 2025
 
 ---
 
-### Made by [@JavadSfT](https://github.com/javadsft)
+### Made with ❤️ by [@JavadSfT](https://github.com/javadsft)
