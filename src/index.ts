@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import keytar from "keytar";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { askHiddenInput, askUserInput } from "./utils/prompt";
 import { parseArgs } from "./core/arg";
 import {
@@ -25,51 +25,71 @@ import { SERVICE_ACCOUNT, SERVICE_NAME } from "./utils/constant";
 import ora from "ora";
 
 const showHelp = () => {
-  console.log(`
-qrotp - Manage and generate OTP tokens from QR codes securely
-
-Usage:
+  console.log(`\n\x1b[36mQROTP\x1b[0m - Manage and generate TOTP/HOTP tokens from QR codes securely\n\n\x1b[1mUSAGE\x1b[0m
   qrotp [options]
+  qrotp <base64> [--counter N]
 
-Options:
-  -sb, --save-base64          Save a base64 QR string to saved list
-      --name, -n <string>     Name/label for the saved token
-      --value, -v <string>    Base64 value for saving
+\x1b[1mOPTIONS\x1b[0m
+  -sb, --save-base64           Save a base64 QR string to saved list
+      --name, -n <string>      Name/label for the saved token
+      --value, -v <string>     Base64 value for saving
 
-  -sp, --save-pic             Save QR from an image file (PNG/JPG)
-      --name, -n <string>     Name/label for the saved token
-      --value, -v <string>    Path to image file (e.g. ./qr.png)
+  -sp, --save-pic              Save QR from an image file (PNG/JPG)
+      --name, -n <string>      Name/label for the saved token
+      --value, -v <string>     Path to image file (e.g. ./qr.png)
 
-  -r, --read <index>          Read and generate OTP from saved token
-  -w, --watch                 Continuously watch OTP every 30s
+  -r, --read <index>           Read and generate OTP from saved token
+      --counter, -c <number>   (HOTP only) Specify counter value for HOTP generation
+  -w, --watch                  Continuously watch OTP every 30s (TOTP only)
       (must be used with --read)
 
-  -d, --delete <index>        Delete entry by its index from saved list
+  -d, --delete <index>         Delete entry by its index from saved list
+  -l, --list                   List all saved tokens with index, name, and type
+  -h, --help                   Show this help message
+  --version, -v                Show version
 
-  -l, --list                  List all saved tokens with index and name
+\x1b[1mPOSITIONAL\x1b[0m
+  <base64>                     (optional) Direct base64 QR input for quick OTP generation
+                               Example: qrotp "ABCDEF=="
 
-  -h, --help                  Show this help message
-
-Positional:
-  <base64>                    (optional) Direct base64 QR input for quick OTP generation
-                              Example: qrotp "ABCDEF=="
-
-Examples:
+\x1b[1mEXAMPLES\x1b[0m
+  # Save a TOTP or HOTP QR code from base64
   qrotp --save-base64 --name Gmail --value "ABCDEF=="
-  qrotp --save-pic --name WorkEmail --value ./qr.png
-  qrotp --list
-  qrotp --read 2
-  qrotp --read 2 --watch
-  qrotp --delete 3
-  qrotp "ABCDEF=="
 
-Note:
+  # Save a QR code from an image file
+  qrotp --save-pic --name WorkEmail --value ./qr.png
+
+  # List all saved tokens
+  qrotp --list
+
+  # Generate OTP from saved entry (auto-detects TOTP/HOTP)
+  qrotp --read 2
+
+  # Generate HOTP with a specific counter
+  qrotp --read 2 --counter 5
+
+  # Watch TOTP token
+  qrotp --read 2 --watch
+
+  # Delete a token
+  qrotp --delete 3
+
+  # Generate OTP directly from a base64 QR
+  qrotp "ABCDEF=="
+  qrotp "ABCDEF==" --counter 7
+
+\x1b[1mNOTES\x1b[0m
   - You must set a master password on first run
   - Data is securely encrypted and stored locally
   - All indexes start from 1
-
-`);
+  - For HOTP tokens, counter is auto-incremented unless specified with --counter
+  - TOTP tokens refresh every 30 seconds; HOTP tokens require a counter
+  - Use --list to see token types and counters\n`);
   process.exit(0);
+};
+
+const showVersion = () => {
+  console.log(`qrotp version: 0.3.0-beta`);
 };
 
 const main = async () => {
@@ -88,6 +108,10 @@ const main = async () => {
 
   if (has("-h", "--help")) {
     showHelp();
+  }
+  if (has("--version", "-v")) {
+    showVersion();
+    process.exit(0);
   }
 
   if (!(await getMasterPassword())) {
@@ -164,7 +188,17 @@ const main = async () => {
       ora("Invalid index. Must be a number >= 1.").fail();
       process.exit(1);
     }
-    await readFromIndex(index - 1);
+
+    // Get counter if provided for HOTP
+    const counterStr = get("-c") ?? get("--counter");
+    const counter = counterStr ? parseInt(counterStr, 10) : undefined;
+
+    if (counterStr && (isNaN(counter!) || counter! < 0)) {
+      ora("Invalid counter. Must be a number >= 0.").fail();
+      process.exit(1);
+    }
+
+    await readFromIndex(index - 1, counter);
     return;
   }
 
@@ -186,7 +220,15 @@ const main = async () => {
   }
 
   if (args.length === 1 && typeof args[0] === "string") {
-    const token = await getOtpFromBase64Qr(args[0]);
+    const counterStr = get("--counter");
+    const counter = counterStr ? parseInt(counterStr, 10) : undefined;
+
+    if (counterStr && (isNaN(counter!) || counter! < 0)) {
+      ora("Invalid counter. Must be a number >= 0.").fail();
+      process.exit(1);
+    }
+
+    const token = await getOtpFromBase64Qr(args[0], false, counter);
     if (token) ora(`Generated OTP: ${token}`).succeed();
     else ora("Failed to generate OTP.").fail();
     return;

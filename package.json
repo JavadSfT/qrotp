@@ -1,6 +1,6 @@
 {
   "name": "qrotp",
-  "version": "0.2.0-beta.2",
+  "version": "0.3.0-beta",
   "main": "index.js",
   "description": "A CLI OTP manager based on QR codes - Beta version",
   "scripts": {
