@@ -40,10 +40,8 @@ export const removeExpiredSession = async () => {
   const data = readdirSync(sessionPath);
   for (const p of data) {
     const file = JSON.parse(await readEncryptedFile(sessionPath + `/${p}`))
-    console.log(file.expireTime , Date.now());
     if(file.expireTime < Date.now()){
       fs.rmSync(sessionPath + `/${p}`)
     }
   }
-  console.log(data);
 };
