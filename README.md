@@ -88,6 +88,75 @@ qrotp <base64> [--counter N]
 
 ---
 
+## 🆘 CLI Help
+
+```
+QROTP - Manage and generate TOTP/HOTP tokens from QR codes securely
+
+USAGE
+  qrotp [options]
+  qrotp <base64> [--counter N]
+
+OPTIONS
+  -sb, --save-base64           Save a base64 QR string to saved list
+      --name, -n <string>      Name/label for the saved token
+      --value, -v <string>     Base64 value for saving
+
+  -sp, --save-pic              Save QR from an image file (PNG/JPG)
+      --name, -n <string>      Name/label for the saved token
+      --value, -v <string>     Path to image file (e.g. ./qr.png)
+
+  -r, --read <index>           Read and generate OTP from saved token
+      --counter, -c <number>   (HOTP only) Specify counter value for HOTP generation
+  -w, --watch                  Continuously watch OTP every 30s (TOTP only)
+      (must be used with --read)
+
+  -d, --delete <index>         Delete entry by its index from saved list
+  -l, --list                   List all saved tokens with index, name, and type
+  -h, --help                   Show this help message
+  --version, -v                Show version
+
+POSITIONAL
+  <base64>                     (optional) Direct base64 QR input for quick OTP generation
+                               Example: qrotp "ABCDEF=="
+
+EXAMPLES
+  # Save a TOTP or HOTP QR code from base64
+  qrotp --save-base64 --name Gmail --value "ABCDEF=="
+
+  # Save a QR code from an image file
+  qrotp --save-pic --name WorkEmail --value ./qr.png
+
+  # List all saved tokens
+  qrotp --list
+
+  # Generate OTP from saved entry (auto-detects TOTP/HOTP)
+  qrotp --read 2
+
+  # Generate HOTP with a specific counter
+  qrotp --read 2 --counter 5
+
+  # Watch TOTP token
+  qrotp --read 2 --watch
+
+  # Delete a token
+  qrotp --delete 3
+
+  # Generate OTP directly from a base64 QR
+  qrotp "ABCDEF=="
+  qrotp "ABCDEF==" --counter 7
+
+NOTES
+  - You must set a master password on first run
+  - Data is securely encrypted and stored locally
+  - All indexes start from 1
+  - For HOTP tokens, counter is auto-incremented unless specified with --counter
+  - TOTP tokens refresh every 30 seconds; HOTP tokens require a counter
+  - Use --list to see token types and counters
+```
+
+---
+
 ## 📸 Examples
 
 **Add a TOTP token from image:**
@@ -194,70 +263,3 @@ ISC © 2025
 ### Made with ❤️ by [@JavadSfT](https://github.com/javadsft)
 
 ---
-
-## 🆘 CLI Help
-
-```
-QROTP - Manage and generate TOTP/HOTP tokens from QR codes securely
-
-USAGE
-  qrotp [options]
-  qrotp <base64> [--counter N]
-
-OPTIONS
-  -sb, --save-base64           Save a base64 QR string to saved list
-      --name, -n <string>      Name/label for the saved token
-      --value, -v <string>     Base64 value for saving
-
-  -sp, --save-pic              Save QR from an image file (PNG/JPG)
-      --name, -n <string>      Name/label for the saved token
-      --value, -v <string>     Path to image file (e.g. ./qr.png)
-
-  -r, --read <index>           Read and generate OTP from saved token
-      --counter, -c <number>   (HOTP only) Specify counter value for HOTP generation
-  -w, --watch                  Continuously watch OTP every 30s (TOTP only)
-      (must be used with --read)
-
-  -d, --delete <index>         Delete entry by its index from saved list
-  -l, --list                   List all saved tokens with index, name, and type
-  -h, --help                   Show this help message
-  --version, -v                Show version
-
-POSITIONAL
-  <base64>                     (optional) Direct base64 QR input for quick OTP generation
-                               Example: qrotp "ABCDEF=="
-
-EXAMPLES
-  # Save a TOTP or HOTP QR code from base64
-  qrotp --save-base64 --name Gmail --value "ABCDEF=="
-
-  # Save a QR code from an image file
-  qrotp --save-pic --name WorkEmail --value ./qr.png
-
-  # List all saved tokens
-  qrotp --list
-
-  # Generate OTP from saved entry (auto-detects TOTP/HOTP)
-  qrotp --read 2
-
-  # Generate HOTP with a specific counter
-  qrotp --read 2 --counter 5
-
-  # Watch TOTP token
-  qrotp --read 2 --watch
-
-  # Delete a token
-  qrotp --delete 3
-
-  # Generate OTP directly from a base64 QR
-  qrotp "ABCDEF=="
-  qrotp "ABCDEF==" --counter 7
-
-NOTES
-  - You must set a master password on first run
-  - Data is securely encrypted and stored locally
-  - All indexes start from 1
-  - For HOTP tokens, counter is auto-incremented unless specified with --counter
-  - TOTP tokens refresh every 30 seconds; HOTP tokens require a counter
-  - Use --list to see token types and counters
-```
